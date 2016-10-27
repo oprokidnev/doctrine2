@@ -438,6 +438,7 @@ class ResultSetMappingBuilder extends ResultSetMapping
      */
     public function generateSelectClause($tableAliases = array())
     {
+        $platform = $this->em->getConnection()->getDatabasePlatform();
         $sql = "";
 
         foreach ($this->columnOwnerMap as $columnName => $dqlAlias) {
@@ -459,9 +460,14 @@ class ResultSetMappingBuilder extends ResultSetMapping
                 $sql .= $this->discriminatorColumns[$dqlAlias];
             }
 
-            $sql .= " AS " . $columnName;
-        }
+            $fieldMetadata = $class->fieldMappings[$this->fieldMappings[$columnName]];
 
+            if (array_key_exists('quoted', $fieldMetadata)) {
+                $sql .= " AS " . $platform->quoteSingleIdentifier($columnName);
+            } else {
+                $sql .= " AS " . $columnName;
+            }
+        }
         return $sql;
     }
 
